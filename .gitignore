@@ -2,3 +2,9 @@ target/
 build/
 .gradle/
 Docker/Lab3/Part2/calculator.jar
+
+# Trivy scan reports (large JSON files)
+Docker/Lab5/reports/*.json
+
+# Trivy scan reports (large JSON files)
+Docker/Lab5/reports/*.json
