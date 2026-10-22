@@ -37,3 +37,6 @@ curl http://localhost:5000
 Expected final values:
 - APP_NAME=iVolveApp3
 - APP_ENV=dev
+  
+## Screenshot
+![Lab 6 Resource Usage](resources.png)
