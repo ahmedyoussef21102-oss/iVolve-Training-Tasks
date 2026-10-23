@@ -26,15 +26,12 @@ docker compose ps
 Open http://localhost:3000
 
 ## Screenshots
-Screenshots will be added here.
 
-## Screenshots
+### Database Connection
+![Database Connection](database-connection.png)
 
-### Database
-![Database](screenshots/database.png)
-
-### Database Verification
-![Database Verification](screenshots/database-verification.png)
+### Verification
+![Verification](verification.png)
 
 ### Volumes and Logs
-![Volumes and Logs](screenshots/volumes-logs.png)
+![Volumes and Logs](volumes-logs.png)
