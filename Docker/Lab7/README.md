@@ -178,3 +178,35 @@ docker volume rm backend-logs notification-logs
 ```
 
 The host-side `backend-data` directory is not removed by these commands.
+
+## Screenshots
+
+### Docker Images
+![Docker Images](docker-images.png)
+
+### Docker Networks
+![Docker Networks](docker-networks.png)
+
+### Volumes and Bind Mount
+![Volumes and Bind Mount](volumes-bindmount.png)
+
+### Notification Health Check
+![Notification Health Check](notification-healthy.png)
+
+### Backend Networks
+![Backend Networks](backend-networks.png)
+
+### Message Flow
+![Message Flow](message-flow.png)
+
+### Microservices Running
+![Microservices Running](microservices-running.png)
+
+### Notification Flow
+![Notification Flow](notification-flow.png)
+
+### Persistent Logs
+![Persistent Logs](persistent-logs.png)
+
+### Storage Verification
+![Storage Verification](storage-verification.png)
