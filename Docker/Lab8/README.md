@@ -26,3 +26,14 @@ Open http://localhost:3000
 
 ## Screenshots
 Screenshots will be added here.
+
+## Screenshots
+
+### Database
+![Database](screenshots/database.png)
+
+### Database Verification
+![Database Verification](screenshots/database-verification.png)
+
+### Volumes and Logs
+![Volumes and Logs](screenshots/volumes-logs.png)
