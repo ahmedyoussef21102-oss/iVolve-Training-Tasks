@@ -19,6 +19,7 @@ A Node.js application and MySQL database containerized using Docker Compose.
 cd Docker/Lab8/iVolveApp
 docker compose up -d --build
 docker compose ps
+```
 
 ## Verification
 
