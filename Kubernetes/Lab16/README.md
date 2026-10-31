@@ -17,29 +17,6 @@ Configure CPU and memory requests and limits for the ivolveapp Deployment.
 
 Check resource configuration:
 
-```bash
-kubectl describe pod <pod-name> -n ivolve
-kubectl top pods -n ivolve
-cat > Kubernetes/Lab16/README.md <<'EOF'
-# Lab 16 - Pod Resource Management
-
-## Objective
-Configure CPU and memory requests and limits for the ivolveapp Deployment.
-
-## Resource Configuration
-
-### Requests
-- CPU: 1
-- Memory: 1Gi
-
-### Limits
-- CPU: 2
-- Memory: 2Gi
-
-## Verification
-
-Check resource configuration:
-
     kubectl describe pod <pod-name> -n ivolve
     kubectl top pods -n ivolve
 
