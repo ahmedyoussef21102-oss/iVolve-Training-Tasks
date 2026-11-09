@@ -1,0 +1,153 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_REPO = 'https://github.com/Ibrahim-Adel15/DemoApp.git'
+        K8S_NAMESPACE = 'ivolve'
+    }
+
+    stages {
+
+        stage('1 - Clone Application') {
+            steps {
+                echo 'Cloning DemoApp source code and Dockerfile...'
+                sh '''
+                    rm -rf app
+                    git clone --depth 1 "$APP_REPO" app
+                    ls -la app
+                '''
+            }
+        }
+
+        stage('2 - Build Application') {
+            steps {
+                dir('app') {
+                    echo 'Building Java application with Maven...'
+                    sh '''
+                        mvn clean package -DskipTests
+                        ls -lh target/demo-0.0.1-SNAPSHOT.jar
+                    '''
+                }
+            }
+        }
+
+        stage('3 - Build Docker Image') {
+            steps {
+                dir('app') {
+                    echo 'Building Docker image...'
+                    sh '''
+                        docker build -t demoapp:${BUILD_NUMBER} .
+                        docker images demoapp
+                    '''
+                }
+            }
+        }
+
+        stage('4 - Scan Docker Image') {
+            steps {
+                echo 'Scanning Docker image using Trivy...'
+                sh '''
+                    trivy image \
+                      --severity HIGH,CRITICAL \
+                      --exit-code 0 \
+                      demoapp:${BUILD_NUMBER}
+                '''
+            }
+        }
+
+        stage('5 - Push Image to DockerHub') {
+            steps {
+                script {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'dockerhub-credentials',
+                            usernameVariable: 'DH_USER',
+                            passwordVariable: 'DH_TOKEN'
+                        )
+                    ]) {
+                        sh '''
+                            set +x
+
+                            echo "$DH_TOKEN" | docker login \
+                                --username "$DH_USER" \
+                                --password-stdin
+
+                            docker tag demoapp:${BUILD_NUMBER} \
+                                "$DH_USER/demoapp:${BUILD_NUMBER}"
+
+                            docker tag demoapp:${BUILD_NUMBER} \
+                                "$DH_USER/demoapp:latest"
+
+                            docker push "$DH_USER/demoapp:${BUILD_NUMBER}"
+                            docker push "$DH_USER/demoapp:latest"
+                        '''
+
+                        env.IMAGE = "${DH_USER}/demoapp:${BUILD_NUMBER}"
+                        env.IMAGE_LATEST = "${DH_USER}/demoapp:latest"
+                    }
+                }
+            }
+        }
+
+        stage('6 - Delete Local Image') {
+            steps {
+                echo 'Removing Docker images from local machine...'
+                sh '''
+                    docker rmi "$IMAGE" || true
+                    docker rmi "$IMAGE_LATEST" || true
+                    docker rmi demoapp:${BUILD_NUMBER} || true
+                '''
+            }
+        }
+
+        stage('7 - Update Deployment File') {
+            steps {
+                echo 'Updating Kubernetes deployment image...'
+                sh '''
+                    sed -i "s|IMAGE_PLACEHOLDER|${IMAGE}|g" \
+                        Jenkins/Lab21/k8s/deployment.yaml
+
+                    cat Jenkins/Lab21/k8s/deployment.yaml
+                '''
+            }
+        }
+
+        stage('8 - Deploy to Kubernetes') {
+            steps {
+                echo 'Deploying application to Kubernetes...'
+                sh '''
+                    kubectl apply \
+                        -f Jenkins/Lab21/k8s/deployment.yaml \
+                        -n "$K8S_NAMESPACE"
+
+                    kubectl apply \
+                        -f Jenkins/Lab21/k8s/service.yaml \
+                        -n "$K8S_NAMESPACE"
+
+                    kubectl rollout status deployment/demoapp \
+                        -n "$K8S_NAMESPACE" \
+                        --timeout=180s
+
+                    kubectl get deployments,services,pods \
+                        -n "$K8S_NAMESPACE" \
+                        -l app=demoapp
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline execution finished.'
+            sh 'docker logout || true'
+        }
+
+        success {
+            echo 'SUCCESS: Application deployed successfully!'
+        }
+
+        failure {
+            echo 'FAILURE: Pipeline failed. Check the console output.'
+        }
+    }
+}
