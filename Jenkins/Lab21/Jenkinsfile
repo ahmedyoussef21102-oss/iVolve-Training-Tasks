@@ -22,11 +22,25 @@ pipeline {
         stage('2 - Build Application') {
             steps {
                 dir('app') {
-                    echo 'Building Java application with Maven...'
-                    sh '''
-                        mvn clean package -DskipTests
-                        ls -lh target/demo-0.0.1-SNAPSHOT.jar
-                    '''
+                    echo 'Building Java application with Java 17 and Maven...'
+                    withEnv([
+                        'JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64',
+                        'PATH+JAVA=/usr/lib/jvm/java-17-openjdk-amd64/bin'
+                    ]) {
+                        sh '''
+                            echo "========== JAVA VERSION =========="
+                            java -version
+                            javac -version
+
+                            echo "========== MAVEN VERSION =========="
+                            mvn -version
+
+                            echo "========== MAVEN BUILD =========="
+                            mvn clean package -DskipTests
+
+                            ls -lh target/demo-0.0.1-SNAPSHOT.jar
+                        '''
+                    }
                 }
             }
         }
