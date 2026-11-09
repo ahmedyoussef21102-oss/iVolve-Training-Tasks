@@ -82,8 +82,8 @@ pipeline {
                             docker push "$DH_USER/demoapp:latest"
                         '''
 
-                        env.IMAGE = "${DH_USER}/demoapp:${BUILD_NUMBER}"
-                        env.IMAGE_LATEST = "${DH_USER}/demoapp:latest"
+                        env.IMAGE = "${env.DH_USER}/demoapp:${BUILD_NUMBER}"
+                        env.IMAGE_LATEST = "${env.DH_USER}/demoapp:latest"
                     }
                 }
             }
