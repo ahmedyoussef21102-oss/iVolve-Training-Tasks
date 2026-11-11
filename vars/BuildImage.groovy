@@ -1,16 +1,8 @@
 def call() {
-    def localImage = "demoapp:${env.BUILD_NUMBER}"
+    def dockerUser = ''
+    def image = ''
 
     try {
-        sh """
-            set -e
-            podman build -t '${localImage}' .
-            podman save -o demoapp-image.tar '${localImage}'
-            trivy image --input demoapp-image.tar \
-                --severity HIGH,CRITICAL \
-                --exit-code 0
-        """
-
         withCredentials([
             usernamePassword(
                 credentialsId: 'dockerhub-credentials',
@@ -18,30 +10,45 @@ def call() {
                 passwordVariable: 'DH_TOKEN'
             )
         ]) {
+            dockerUser = env.DH_USER
+            image = "docker.io/${dockerUser}/demoapp:${env.BUILD_NUMBER}"
+
             sh """
+                set -e
+                podman build -t demoapp:${env.BUILD_NUMBER} .
+                podman save -o demoapp-image.tar demoapp:${env.BUILD_NUMBER}
+
+                trivy image --input demoapp-image.tar \
+                    --severity HIGH,CRITICAL --exit-code 0
+
                 set +x
                 echo "\$DH_TOKEN" | podman login docker.io \
-                    --username "\$DH_USER" \
-                    --password-stdin
+                    --username "\$DH_USER" --password-stdin
 
-                podman tag '${localImage}' \
-                    "docker.io/\$DH_USER/demoapp:${env.BUILD_NUMBER}"
+                podman tag demoapp:${env.BUILD_NUMBER} '${image}'
+                podman tag demoapp:${env.BUILD_NUMBER} \
+                    'docker.io/${dockerUser}/demoapp:latest'
 
-                podman tag '${localImage}' \
-                    "docker.io/\$DH_USER/demoapp:latest"
-
-                podman push "docker.io/\$DH_USER/demoapp:${env.BUILD_NUMBER}"
-                podman push "docker.io/\$DH_USER/demoapp:latest"
+                podman push '${image}'
+                podman push 'docker.io/${dockerUser}/demoapp:latest'
             """
-            env.IMAGE = "docker.io/${env.DH_USER}/demoapp:${env.BUILD_NUMBER}"
         }
+
+        env.IMAGE = image
+        echo "Image published: ${image}"
+        return image
+
     } finally {
         sh """
             podman logout docker.io || true
-            podman rmi '${localImage}' || true
-            podman rmi 'docker.io/\${env.DH_USER ?: "unused"}/demoapp:${env.BUILD_NUMBER}' || true
-            podman rmi 'docker.io/\${env.DH_USER ?: "unused"}/demoapp:latest' || true
+            podman rmi demoapp:${env.BUILD_NUMBER} || true
             rm -f demoapp-image.tar
         """
+        if (dockerUser) {
+            sh """
+                podman rmi 'docker.io/${dockerUser}/demoapp:${env.BUILD_NUMBER}' || true
+                podman rmi 'docker.io/${dockerUser}/demoapp:latest' || true
+            """
+        }
     }
 }
