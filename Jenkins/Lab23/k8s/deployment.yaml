@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demoapp-lab23
+  namespace: ivolve
+  labels:
+    app: demoapp-lab23
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: demoapp-lab23
+  template:
+    metadata:
+      labels:
+        app: demoapp-lab23
+    spec:
+      containers:
+        - name: demoapp
+          image: IMAGE_PLACEHOLDER
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http

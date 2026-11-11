@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: demoapp-lab23-service
+  namespace: ivolve
+spec:
+  type: ClusterIP
+  selector:
+    app: demoapp-lab23
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
