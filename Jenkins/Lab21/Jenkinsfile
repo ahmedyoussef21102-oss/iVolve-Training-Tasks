@@ -116,12 +116,12 @@ pipeline {
 
         stage('7 - Update Deployment File') {
             steps {
-                echo 'Updating Kubernetes deployment image...'
+                echo 'Creating a temporary Kubernetes deployment file...'
                 sh '''
-                    sed -i "s|IMAGE_PLACEHOLDER|${IMAGE}|g" \
-                        Jenkins/Lab21/k8s/deployment.yaml
+                    sed "s|IMAGE_PLACEHOLDER|${IMAGE}|g" \
+                        Jenkins/Lab21/k8s/deployment.yaml > deployment-rendered.yaml
 
-                    cat Jenkins/Lab21/k8s/deployment.yaml
+                    cat deployment-rendered.yaml
                 '''
             }
         }
@@ -130,21 +130,14 @@ pipeline {
             steps {
                 echo 'Deploying application to Kubernetes...'
                 sh '''
-                    kubectl apply \
-                        -f Jenkins/Lab21/k8s/deployment.yaml \
-                        -n "$K8S_NAMESPACE"
-
-                    kubectl apply \
-                        -f Jenkins/Lab21/k8s/service.yaml \
-                        -n "$K8S_NAMESPACE"
+                    kubectl apply -f deployment-rendered.yaml -n "$K8S_NAMESPACE"
+                    kubectl apply -f Jenkins/Lab21/k8s/service.yaml -n "$K8S_NAMESPACE"
 
                     kubectl rollout status deployment/demoapp \
-                        -n "$K8S_NAMESPACE" \
-                        --timeout=180s
+                        -n "$K8S_NAMESPACE" --timeout=180s
 
                     kubectl get deployments,services,pods \
-                        -n "$K8S_NAMESPACE" \
-                        -l app=demoapp
+                        -n "$K8S_NAMESPACE" -l app=demoapp
                 '''
             }
         }
