@@ -1,0 +1,61 @@
+@Library('ivolve-shared-library') _
+
+pipeline {
+    agent {
+        label 'rhel-agent'
+    }
+
+    environment {
+        APP_REPO = 'https://github.com/Ibrahim-Adel15/DemoApp.git'
+        JAVA_HOME = '/home/ahmed-youssef/.local/java/current'
+        MAVEN_HOME = '/home/ahmed-youssef/.local/maven'
+        PATH = "/home/ahmed-youssef/.local/bin:/home/ahmed-youssef/.local/maven/bin:/home/ahmed-youssef/.local/java/current/bin:${env.PATH}"
+    }
+
+    stages {
+        stage('1 - Clone Application') {
+            steps {
+                sh '''
+                    rm -rf app
+                    git clone --depth 1 "$APP_REPO" app
+                    test -f app/Dockerfile
+                '''
+            }
+        }
+
+        stage('2 - Build App and Unit Tests') {
+            steps {
+                dir('app') {
+                    BuildApp()
+                }
+            }
+        }
+
+        stage('3 - Build, Scan and Push Image') {
+            steps {
+                dir('app') {
+                    BuildImage()
+                }
+            }
+        }
+
+        stage('4 - Deploy on Kubernetes') {
+            steps {
+                DeployOnK8s()
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Lab 22 pipeline finished.'
+            cleanWs()
+        }
+        success {
+            echo 'SUCCESS: Application deployed to Kubernetes.'
+        }
+        failure {
+            echo 'FAILED: Check the Jenkins Console Output.'
+        }
+    }
+}
