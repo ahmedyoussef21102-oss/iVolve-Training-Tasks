@@ -18,7 +18,7 @@ def call() {
                 podman build -t demoapp:${env.BUILD_NUMBER} .
                 podman save -o demoapp-image.tar demoapp:${env.BUILD_NUMBER}
 
-                trivy image --input demoapp-image.tar \
+                trivy image --timeout 15m --input demoapp-image.tar \
                     --severity HIGH,CRITICAL --exit-code 0
 
                 set +x
