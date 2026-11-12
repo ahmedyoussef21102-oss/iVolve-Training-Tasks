@@ -1,0 +1,10 @@
+plugin: constructed
+strict: false
+
+groups:
+  rhel_nodes: inventory_hostname == 'rhel-worker'
+  lab28_managed: "'managed' in group_names"
+
+keyed_groups:
+  - key: ansible_user
+    prefix: ssh_user

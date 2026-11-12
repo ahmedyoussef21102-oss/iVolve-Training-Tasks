@@ -1,0 +1,37 @@
+---
+- name: Configure Nginx using Dynamic Inventory
+  hosts: rhel_nodes
+  become: true
+
+  tasks:
+    - name: Install Nginx
+      ansible.builtin.dnf:
+        name: nginx
+        state: present
+        disablerepo: "*"
+        enablerepo: local_AppStream
+
+    - name: Create Lab28 web page
+      ansible.builtin.copy:
+        dest: /usr/share/nginx/html/index.html
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>iVolve Lab28</title>
+          </head>
+          <body>
+              <h1>Lab28 - Ansible Dynamic Inventory</h1>
+              <p>Nginx deployed successfully using Ansible.</p>
+              <p>Managed Node: {{ inventory_hostname }}</p>
+          </body>
+          </html>
+
+    - name: Enable and start Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
