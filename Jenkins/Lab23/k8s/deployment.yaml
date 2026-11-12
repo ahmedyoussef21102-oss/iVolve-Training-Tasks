@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: demoapp
-          image: IMAGE_PLACEHOLDER
+          image: docker.io/ahmedyoussef21102/demoapp:5
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
