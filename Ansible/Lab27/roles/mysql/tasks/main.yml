@@ -1,0 +1,42 @@
+---
+- name: Install MariaDB and PyMySQL
+  ansible.builtin.dnf:
+    name:
+      - mariadb-server
+      - python3-PyMySQL
+    state: present
+
+- name: Enable and start MariaDB
+  ansible.builtin.systemd:
+    name: mariadb
+    enabled: true
+    state: started
+
+- name: Create ivolve database
+  community.mysql.mysql_db:
+    name: ivolve
+    state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+
+- name: Create ivolveuser with all database privileges
+  community.mysql.mysql_user:
+    name: ivolveuser
+    host: localhost
+    password: "{{ mysql_password }}"
+    priv: "ivolve.*:ALL"
+    state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+
+- name: Connect as ivolveuser and list databases
+  community.mysql.mysql_query:
+    login_user: ivolveuser
+    login_password: "{{ mysql_password }}"
+    login_db: ivolve
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    query: SHOW DATABASES
+  register: database_check
+  no_log: true
+
+- name: Display database list
+  ansible.builtin.debug:
+    var: database_check.query_result

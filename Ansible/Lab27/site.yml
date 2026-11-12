@@ -1,0 +1,10 @@
+---
+- name: Lab27 - Securing Sensitive Data with Ansible Vault
+  hosts: managed
+  become: true
+
+  vars_files:
+    - group_vars/all/vault.yml
+
+  roles:
+    - mysql
