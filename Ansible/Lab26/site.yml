@@ -1,0 +1,9 @@
+---
+- name: Lab26 - Configuration Management Using Ansible Roles
+  hosts: managed
+  become: true
+
+  roles:
+    - docker
+    - kubectl
+    - jenkins
